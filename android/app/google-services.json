@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "44430074671",
+    "project_id": "two-d-project",
+    "storage_bucket": "two-d-project.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:44430074671:android:dc3148a57e89280bedb7da",
+        "android_client_info": {
+          "package_name": "com.twod.ak"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDBU-qlsP96ZhU1zVEAQ1ICH3GqjuzQSIY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
