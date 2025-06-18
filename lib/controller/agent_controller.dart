@@ -19,6 +19,8 @@ class AgentController extends GetxController {
   var searchTextAgent = ''.obs;
   var noInternet = 'no-internet'.obs;
   var copyText = 'စာကူးထည့်ခြင်း'.obs;
+  var selectedFilter = ''.obs;
+  var filterAgents = [].obs;
 
   @override
   void onInit() {
@@ -30,14 +32,19 @@ class AgentController extends GetxController {
     selectedValue.value = value;
   }
 
+  void updateFilterValue(String value) {
+    selectedFilter.value = value;
+  }
+
   void fetchAgents() {
     listOfAgentName.clear();
-
+    filterAgents.clear();
     _agentService
         .getAgents(searchText: searchTextAgent.value)
         .listen((agentList) {
       for (var agent in agentList) {
         listOfAgentName.add(agent.name);
+        filterAgents.add(agent.name);
       }
 
       agents.assignAll(agentList);

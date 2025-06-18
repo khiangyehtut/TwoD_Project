@@ -55,30 +55,29 @@ class AgentLedgerPage extends StatelessWidget {
                             AgentModel agent = agentController.agents[index];
                             return FutureBuilder<Map<String, int>>(
                               future: agentController.getDigitByName(
-                                  selected.id.toString(),
-                                  agent,
-                                  selected.poukTeeNo,
-                                  selected.za.toString()),
+                                selected.id.toString(),
+                                agent,
+                                selected.poukTeeNo,
+                                selected.za.toString(),
+                              ),
                               builder: (context, snapshot) {
                                 if (snapshot.connectionState ==
                                     ConnectionState.waiting) {
-                                  return AgentContainer(
-                                    name: agent.name,
-                                    total: '0',
-                                    percent: '0',
-                                  );
-                                } else if (snapshot.hasError) {
-                                  return AgentContainer(
-                                    name: agent.name,
-                                    total: '0',
-                                    percent: '0',
-                                  );
-                                } else if (snapshot.hasData) {
+                                  return const SizedBox(); // Hide loading tile
+                                } else if (snapshot.hasError ||
+                                    !snapshot.hasData) {
+                                  return const SizedBox(); // Hide error/no-data agent
+                                } else {
+                                  final total = snapshot.data!['total'] ?? 0;
+                                  if (total == 0) {
+                                    return const SizedBox(); // Skip agents with 0 total
+                                  }
+
                                   return AgentContainer(
                                     poukTeeNo: selected.poukTeeNo,
                                     date: selected.ledger,
                                     name: agent.name,
-                                    total: snapshot.data!['total'].toString(),
+                                    total: total.toString(),
                                     percent:
                                         snapshot.data!['percent'].toString(),
                                     poukTeeAmount: snapshot
@@ -90,16 +89,10 @@ class AgentLedgerPage extends StatelessWidget {
                                             .toString() ??
                                         '0',
                                   );
-                                } else {
-                                  return AgentContainer(
-                                    name: agent.name,
-                                    total: 'No data',
-                                  );
                                 }
                               },
                             );
-                          },
-                        )),
+                          })),
             ],
           );
         }),

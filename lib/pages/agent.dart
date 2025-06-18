@@ -9,8 +9,6 @@ import 'package:two_d_project/components/my_dialog.dart';
 import 'package:two_d_project/components/myelevated.dart';
 import 'package:two_d_project/constant/constant.dart';
 import 'package:two_d_project/controller/agent_controller.dart';
-import 'package:two_d_project/controller/create_user.dart';
-
 import 'package:two_d_project/model/agent_model.dart';
 
 // ignore: must_be_immutable
