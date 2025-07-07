@@ -26,7 +26,7 @@ class NetworkController extends GetxController {
 
       final result = await http
           .get(Uri.parse('https://clients3.google.com/generate_204'))
-          .timeout(Duration(seconds: 5));
+          .timeout(const Duration(seconds: 5));
 
       isConnected.value = result.statusCode == 204;
     } catch (_) {

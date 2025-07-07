@@ -35,7 +35,7 @@ class NotiTextPage extends StatelessWidget {
                     return ListTile(
                       title: Text(item['description'] ?? 'No Description'),
                       trailing: IconButton(
-                        icon: Icon(Icons.delete),
+                        icon: const Icon(Icons.delete),
                         onPressed: () => controller.deleteNotiText(item['id']),
                       ),
                       onTap: () {
@@ -44,8 +44,8 @@ class NotiTextPage extends StatelessWidget {
                           title: 'Edit Message',
                           content: TextField(
                             controller: descriptionController,
-                            decoration:
-                                InputDecoration(labelText: 'New Description'),
+                            decoration: const InputDecoration(
+                                labelText: 'New Description'),
                           ),
                           textConfirm: 'Update',
                           textCancel: 'Cancel',
@@ -74,7 +74,7 @@ class NotiTextPage extends StatelessWidget {
                   Expanded(
                     child: TextField(
                       controller: descriptionController,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         hintText: 'Enter a message...',
                         border: OutlineInputBorder(),
                       ),
@@ -90,7 +90,7 @@ class NotiTextPage extends StatelessWidget {
                         clearField();
                       }
                     },
-                    child: Text('Send'),
+                    child: const Text('Send'),
                   ),
                 ],
               ),

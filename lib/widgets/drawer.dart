@@ -103,7 +103,7 @@ class CustomDrawer extends StatelessWidget {
       height: 30,
       child: Obx(() {
         if (notiController.notiTexts.isEmpty) {
-          return const Center(child: const Text('No messages yet'));
+          return const Center(child: Text('No messages yet'));
         }
         final latest = notiController.notiTexts.last;
         return Marquee(

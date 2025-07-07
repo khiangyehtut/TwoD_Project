@@ -742,75 +742,38 @@ class TwodController extends GetxController {
         }
       }
       // 1 ထိပ် နောက်
-      final regex =
-          RegExp(r'(\d)\s*ထိပ်[ =\-\.,]?(\d+)|(\d)\s*နောက်[ =\-\.,]?(\d+)');
+      final regex = RegExp(
+          r'([\d\D]+?)\s*(ထိ(?:ပ်|ပ|ပါ))\s*[ =\-\.,]?(\d+)|' // Flexible multiple digits before ထိ variations
+          r'([\d\D]+?)\s*(နော(?:က်|က|ကါ))\s*[ =\-\.,]?(\d+)' // Flexible multiple digits before နောက် variations
+          );
+
       final matches = regex.allMatches(line);
 
       for (final match in matches) {
-        if (match.group(1) != null && match.group(2) != null) {
-          // Handle "ထိပ်"
-          final digit = match.group(1)!;
-          final value = int.parse(match.group(2)!);
-          for (var i = 0; i < 10; i++) {
-            preDigits.add(PreDigit(key: '$digit$i', value: value));
-          }
-        }
-        if (match.group(3) != null && match.group(4) != null) {
-          // Handle "နောက်"
-          final digit = match.group(3)!;
-          final value = int.parse(match.group(4)!);
-          for (var i = 0; i < 10; i++) {
-            preDigits.add(PreDigit(key: '$i$digit', value: value));
-          }
-        }
-      }
+        if (match.group(1) != null && match.group(3) != null) {
+          // Handle multiple digits for ထိ variations
+          final digits =
+              match.group(1)!.split(RegExp(r'\D+')).where((d) => d.isNotEmpty);
+          final value = int.parse(match.group(3)!);
 
-      // ✅ "ထိပ်" pattern: 5ထိပ် or 5 ထိပ် = 50-59
-      if (RegExp(r'^\d\s?ထိပ်[ =\-\.,]?\d+$').hasMatch(line)) {
-        final match = RegExp(r'^(\d)\s?ထိပ်[ =\-\.,]?(\d+)$').firstMatch(line);
-        if (match != null) {
-          final digit = match.group(1)!;
-          final value = int.tryParse(match.group(2)!) ?? 0;
-          final list = List.generate(10, (i) => '$digit$i');
-          for (var d in list) {
-            preDigits.add(PreDigit(key: d, value: value));
-          }
-          continue;
-        }
-      }
-      // 1,2,3 ထိပ်
-      if (RegExp(r'^([\d,.\-= ]+)\s?ထိပ်[ =\-.,]?\d+$').hasMatch(line)) {
-        final match =
-            RegExp(r'^([\d,.\-= ]+)\s?ထိပ်[ =\-.,]?(\d+)$').firstMatch(line);
-        if (match != null) {
-          final rawDigits = match.group(1)!;
-          final value = int.tryParse(match.group(2)!) ?? 0;
-
-          final digits = rawDigits
-              .split(RegExp(r"[,\.\-= ]+"))
-              .where((e) => e.isNotEmpty)
-              .toList();
-
-          for (var digit in digits) {
-            final list = List.generate(10, (i) => '$digit$i');
-            for (var d in list) {
-              preDigits.add(PreDigit(key: d, value: value));
+          for (final digit in digits) {
+            for (var i = 0; i < 10; i++) {
+              preDigits.add(PreDigit(key: '$digit$i', value: value));
             }
           }
         }
-      }
 
-      // ✅ "နောက်" pattern: 5နောက် or 5 နောက် = 05,15,...95
-      if (RegExp(r'^\d\s?နောက်[ =\-\.,]?\d+$').hasMatch(line)) {
-        final match = RegExp(r'^(\d)\s?နောက်[ =\-\.,]?(\d+)$').firstMatch(line);
-        if (match != null) {
-          final digit = match.group(1)!;
-          final value = int.tryParse(match.group(2)!) ?? 0;
-          final list = List.generate(10, (i) => '$i$digit');
-          for (var d in list) {
-            preDigits.add(PreDigit(key: d, value: value));
+        if (match.group(4) != null && match.group(6) != null) {
+          // Handle multiple digits for နောက် variations
+          final digits =
+              match.group(4)!.split(RegExp(r'\D+')).where((d) => d.isNotEmpty);
+          final value = int.parse(match.group(6)!);
+
+          for (final digit in digits) {
+            for (var i = 0; i < 10; i++) {
+              preDigits.add(PreDigit(key: '$i$digit', value: value));
+            }
           }
-          continue;
         }
       }
 

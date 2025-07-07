@@ -20,71 +20,111 @@ class VouncherPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        foregroundColor: Colors.white,
-        backgroundColor: Colors.deepPurple,
-        title: const Text('စလစ်များ',
-            style: TextStyle(fontSize: 18, color: Colors.white)),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Image.asset('images/ledger.png', width: 36, height: 36),
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Column(
-          children: [
-            Obx(() {
-              final List<String> items = [
-                'All',
-                ...agentController.filterAgents.cast<String>()
-              ];
-              return DropdownButtonFormField<String>(
-                isExpanded: true,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Select agent',
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                ),
-                value: agentController.selectedFilter.value.isEmpty
-                    ? 'All'
-                    : agentController.selectedFilter.value,
-                items: items
-                    .map((name) =>
-                        DropdownMenuItem(value: name, child: Text(name)))
-                    .toList(),
-                onChanged: (val) {
-                  if (val != null) {
-                    agentController.updateFilterValue(val == 'All' ? '' : val);
-                  }
-                },
-              );
-            }),
-            const SizedBox(height: 10),
-            Expanded(
-              child: Obx(() {
-                final filter = agentController.selectedFilter.value;
-                final allVouchers = digitsController.vouncherDigit;
-                final vouchers = filter.isEmpty
-                    ? allVouchers
-                    : allVouchers.where((v) => v.group == filter).toList();
-
-                if (vouchers.isEmpty) {
-                  return const Center(child: Text('No vouchers available.'));
-                }
-
-                return ListView.builder(
-                  itemCount: vouchers.length,
-                  itemBuilder: (_, i) => _voucherItem(context, vouchers[i]),
-                );
-              }),
+        appBar: AppBar(
+          foregroundColor: Colors.white,
+          backgroundColor: Colors.deepPurple,
+          title: const Text('စလစ်များ',
+              style: TextStyle(fontSize: 18, color: Colors.white)),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Image.asset('images/ledger.png', width: 36, height: 36),
             ),
           ],
         ),
-      ),
-    );
+        body: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Stack(
+            children: [
+              Column(
+                children: [
+                  Obx(() {
+                    final List<String> items = [
+                      'All',
+                      ...List<String>.from(agentController.filterAgents)
+                        ..sort(),
+                    ];
+
+                    return DropdownButtonFormField<String>(
+                      onTap: () => print('work'),
+                      isExpanded: true,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'Select agent',
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                      ),
+                      value: agentController.selectedFilter.value.isEmpty
+                          ? 'All'
+                          : agentController.selectedFilter.value,
+                      items: items
+                          .map((name) =>
+                              DropdownMenuItem(value: name, child: Text(name)))
+                          .toList(),
+                      onChanged: (val) {
+                        if (val != null) {
+                          agentController
+                              .updateFilterValue(val == 'All' ? '' : val);
+                        }
+                      },
+                    );
+                  }),
+                  const SizedBox(height: 10),
+                  Expanded(
+                    child: Obx(() {
+                      final filter = agentController.selectedFilter.value;
+                      final allVouchers = digitsController.vouncherDigit;
+                      final vouchers = filter.isEmpty
+                          ? allVouchers
+                          : allVouchers
+                              .where((v) => v.group == filter)
+                              .toList();
+
+                      if (vouchers.isEmpty) {
+                        return const Center(
+                            child: Text('No vouchers available.'));
+                      }
+
+                      return ListView.builder(
+                        padding: const EdgeInsets.only(
+                            bottom: 60), // Extra space for bottom bar
+                        itemCount: vouchers.length,
+                        itemBuilder: (_, i) =>
+                            _voucherItem(context, vouchers[i]),
+                      );
+                    }),
+                  ),
+                  Container(
+                    width: double.infinity,
+                    height: 50,
+                    alignment: Alignment.center,
+                    color: Colors.deepPurple,
+                    child: Obx(() {
+                      final filter = agentController.selectedFilter.value;
+                      final allVouchers = digitsController.vouncherDigit;
+                      final vouchers = filter.isEmpty
+                          ? allVouchers
+                          : allVouchers
+                              .where((v) => v.group == filter)
+                              .toList();
+
+                      final totalAmount = vouchers.fold<int>(
+                          0, (sum, item) => sum + item.totalSum);
+
+                      return Text(
+                        'စုစုပေါင်း : $totalAmount',
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      );
+                    }),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ));
   }
 
   Widget _voucherItem(BuildContext ctx, DigitsModel digit) {
@@ -137,7 +177,7 @@ class VouncherPage extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
+                  SizedBox(
                     width: 200,
                     child: DropdownButtonFormField<String>(
                       value: currentAgent,
@@ -294,6 +334,7 @@ class VouncherPage extends StatelessWidget {
                           ),
                           context,
                         );
+                        Navigator.pop(context);
                       } else {
                         Navigator.pop(context);
                         Helper.customAlertDialog(

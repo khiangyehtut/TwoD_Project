@@ -96,6 +96,7 @@ class TwoDPage extends StatelessWidget {
                 agentController.isKeyboardVisible.value = false;
                 agentController.fetchAgents();
                 digitsController.listenToGroups();
+                agentController.selectedFilter.value = '';
                 Get.to(() => VouncherPage(
                       agentController: agentController,
                     ));
