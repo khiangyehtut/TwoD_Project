@@ -1,4 +1,4 @@
-// ignore_for_file: must_be_immutable, use_build_context_synchronously, deprecated_member_use
+// ignore_for_file: must_be_immutable, use_build_context_synchronously, deprecated_member_use, curly_braces_in_flow_control_structures
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -163,7 +163,8 @@ class MyKeyboard extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 5),
                           child: InkWell(
                             onTap: () async {
-                              if (twodController.preDigits.isNotEmpty) {
+                              if (twodController.isUploading.value ==
+                                  false) if (twodController.preDigits.isNotEmpty) {
                                 twodController.isUploading.value = true;
                                 await internetController.checkInternet();
                                 if (internetController.isConnected.value) {

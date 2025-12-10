@@ -34,7 +34,6 @@ class LedgerController extends GetxController {
       },
       onError: (e) {
         isLoading.value = false;
-        print("Error fetching ledgers: $e");
       },
     );
   }

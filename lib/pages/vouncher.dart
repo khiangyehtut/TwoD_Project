@@ -46,7 +46,6 @@ class VouncherPage extends StatelessWidget {
                     ];
 
                     return DropdownButtonFormField<String>(
-                      onTap: () => print('work'),
                       isExpanded: true,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),

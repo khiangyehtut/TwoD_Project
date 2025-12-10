@@ -45,7 +45,6 @@ class TwoDPage extends StatelessWidget {
                     agentController.listOfAgentName.toSet().toList()..sort();
                 final selectedValue = agentController.selectedValue.value;
                 final isValidSelection = sortedList.contains(selectedValue);
-
                 return DropdownButton<String>(
                   dropdownColor: Colors.blueAccent,
                   style: const TextStyle(color: Colors.white),
@@ -337,8 +336,10 @@ class TwoDPage extends StatelessWidget {
                                 .toList()
                               ..sort((a, b) => b.value.compareTo(a.value));
 
-                            final totalOver =
-                                twodController.getOverTotal(ledger.limitBreak);
+                            final totalOver = twodController.getOverTotal(
+                                digitsController
+                                    .selectedLedger.value!.limitBreak);
+
                             final totalValue =
                                 twodController.totalValue - totalOver;
                             digitsController.copy.value = '';
@@ -424,8 +425,15 @@ class TwoDPage extends StatelessWidget {
                                             final digit = entries[index].key;
                                             final value = entries[index].value;
                                             final overValue = value >
-                                                    ledger.limitBreak
-                                                ? (value - ledger.limitBreak)
+                                                    digitsController
+                                                        .selectedLedger
+                                                        .value!
+                                                        .limitBreak
+                                                ? (value -
+                                                    digitsController
+                                                        .selectedLedger
+                                                        .value!
+                                                        .limitBreak)
                                                 : 0;
 
                                             if (overValue > 0) {

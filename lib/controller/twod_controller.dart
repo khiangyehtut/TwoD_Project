@@ -497,6 +497,7 @@ class TwodController extends GetxController {
     return digits.values.where((v) => v > 0).fold(0, (sum, v) => sum + v);
   }
 
+  // အကျွံစုစုပေါင်း
   int getOverTotal(int limitBreak) {
     return digits.values
         .where((v) => v > limitBreak)
@@ -530,14 +531,142 @@ class TwodController extends GetxController {
     }
   }
 
+  // Copy State Management............................
+
   void processInput(String input) {
+    String? lastValue; // ⭐ REQUIRED
+    bool lastIsR = false; // ⭐ REQUIRED
+
     final lines = input.split('\n');
     for (var line in lines) {
       line = line.trim();
       if (line.isEmpty) continue;
 
-      //
+      // ✅ Slash-separated pairs like: 12/200 34/100
+      if (RegExp(r'^\d{2}/\d+').hasMatch(line)) {
+        final pairs = line.split(RegExp(r'\s+'));
+        for (var pair in pairs) {
+          final match = RegExp(r'^(\d{2})/(\d+)$').firstMatch(pair);
+          if (match != null) {
+            final key = match.group(1)!;
+            final value = int.tryParse(match.group(2)!) ?? 0;
+            preDigits.add(PreDigit(key: key, value: value));
+          }
+        }
+        continue;
+      }
+      // -----------------------------
 
+// ⭐ Handle digitRamount without space (e.g. 12R10000)
+      final pureR = RegExp(r'^(\d{2})R(\d+)$').firstMatch(line);
+      if (pureR != null) {
+        final key = pureR.group(1)!; // 12
+        final amount = int.parse(pureR.group(2)!); // 10000
+
+        // store carry-forward
+        lastValue = '${key}R$amount';
+        lastIsR = true;
+
+        // add both
+        preDigits.add(PreDigit(key: key, value: amount)); // 12
+        preDigits.add(PreDigit(
+            key: key.split('').reversed.join(), // 21
+            value: amount));
+
+        continue;
+      }
+      final directMatch =
+          RegExp(r'^(\d{2})[\s\*]+(\d+(?:R\d+)?)$').firstMatch(line);
+      if (directMatch != null) {
+        final key = directMatch.group(1)!;
+        final raw = directMatch.group(2)!;
+
+        lastValue = raw;
+        lastIsR = raw.contains('R');
+
+        if (lastIsR) {
+          final parts = raw.split('R');
+
+          if (parts[0].length == 2) {
+            // 56R1000 → 56/65 = 1000
+            final amount = int.parse(parts[1]);
+            preDigits.add(PreDigit(key: key, value: amount));
+            preDigits.add(
+                PreDigit(key: key.split('').reversed.join(), value: amount));
+          } else {
+            // 300R200 → forward=300, reverse=200
+            final v1 = int.parse(parts[0]);
+            final v2 = int.parse(parts[1]);
+            preDigits.add(PreDigit(key: key, value: v1));
+            preDigits
+                .add(PreDigit(key: key.split('').reversed.join(), value: v2));
+          }
+        } else {
+          // simple (44 200)
+          preDigits.add(PreDigit(key: key, value: int.parse(raw)));
+        }
+
+        continue;
+      }
+
+// 2) Only STAR — "99*", "37*"
+      final starOnly = RegExp(r'^(\d{2})\s*\*$').firstMatch(line);
+      if (starOnly != null) {
+        final key = starOnly.group(1)!;
+
+        if (lastValue != null) {
+          if (lastIsR) {
+            final parts = lastValue.split('R');
+
+            if (parts[0].length == 2) {
+              // digitRamount
+              final amount = int.parse(parts[1]);
+              preDigits.add(PreDigit(key: key, value: amount));
+              preDigits.add(
+                  PreDigit(key: key.split('').reversed.join(), value: amount));
+            } else {
+              // amountRamount
+              final v1 = int.parse(parts[0]);
+              final v2 = int.parse(parts[1]);
+              preDigits.add(PreDigit(key: key, value: v1));
+              preDigits
+                  .add(PreDigit(key: key.split('').reversed.join(), value: v2));
+            }
+          } else {
+            preDigits.add(PreDigit(key: key, value: int.parse(lastValue)));
+          }
+        }
+
+        continue;
+      }
+
+// 3) Empty carry-forward "99", "37", "66"
+      if (RegExp(r'^\d{2}$').hasMatch(line)) {
+        if (lastValue != null) {
+          final key = line;
+
+          if (lastIsR) {
+            final parts = lastValue.split('R');
+
+            if (parts[0].length == 2) {
+              final amount = int.parse(parts[1]);
+              preDigits.add(PreDigit(key: key, value: amount));
+              preDigits.add(
+                  PreDigit(key: key.split('').reversed.join(), value: amount));
+            } else {
+              final v1 = int.parse(parts[0]);
+              final v2 = int.parse(parts[1]);
+              preDigits.add(PreDigit(key: key, value: v1));
+              preDigits
+                  .add(PreDigit(key: key.split('').reversed.join(), value: v2));
+            }
+          } else {
+            preDigits.add(PreDigit(key: key, value: int.parse(lastValue)));
+          }
+        }
+
+        continue;
+      }
       if (RegExp(r'ပါ?ဝါ').hasMatch(line)) {
         final value = int.tryParse(line.replaceAll(RegExp(r'[^\d]'), '')) ?? 0;
         const targets = [
@@ -668,13 +797,12 @@ class TwodController extends GetxController {
         continue;
       }
       // ✅ Group Reversibles (e.g., 25,35 R 10000 or 25 35 r 10000)
-      if (line.contains(RegExp(r'[Rr@/0-9]*[Rr@/][0-9]*'))) {
-        final parts = line.split(RegExp(r'\s*[Rr@/]\s*'));
+      if (line.contains(RegExp(r'[Rr@0-9]*[Rr@][0-9]*'))) {
+        final parts = line.split(RegExp(r'\s*[Rr@]\s*'));
         if (parts.length == 2) {
           final digitGroup = parts[0].trim();
           final amount = int.tryParse(parts[1].trim()) ?? 0;
 
-          // Split by commas, periods, spaces, equals, dashes
           final digits = digitGroup.split(RegExp(r'[,.\s=\-]+'));
 
           for (var raw in digits) {
@@ -900,8 +1028,9 @@ class TwodController extends GetxController {
       }
 
       // ✅ Normal single entry: 25 = 5000
-      if (line.contains(RegExp(r'[=,\-\s\.\/]'))) {
-        final parts = line.split(RegExp(r'[=,\-\s\.\/]+'));
+      // ✅ Normal single entry: 25 = 5000 (now supports "*")
+      if (line.contains(RegExp(r'[=,\-\s\.\/\*]'))) {
+        final parts = line.split(RegExp(r'[=,\-\s\.\/\*]+'));
         if (parts.length >= 2) {
           final value = int.tryParse(parts.last.trim()) ?? 0;
 
@@ -913,10 +1042,13 @@ class TwodController extends GetxController {
           }
         }
       }
+      // empty
     }
 
     Future.delayed(const Duration(milliseconds: 100), () {
       scrollController.jumpTo(scrollController.position.maxScrollExtent);
     });
   }
+
+  // test process input
 }
